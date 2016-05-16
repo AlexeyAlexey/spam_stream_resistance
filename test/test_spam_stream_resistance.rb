@@ -6,6 +6,7 @@ class TestSpamStreamResistance < Minitest::Test
   end
 
   def test_it_does_something_useful
+  	SpamStreamResistance.new.test_method
     assert false
   end
 end
