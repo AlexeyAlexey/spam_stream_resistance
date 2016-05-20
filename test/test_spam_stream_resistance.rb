@@ -30,12 +30,16 @@ class TestSpamStreamResistance < Minitest::Test
     
     assert_equal ({ filter_id => {} }), @spam_stream_resistance.settings_filter_id
 
-    @spam_stream_resistance.settings_filter_id_add(filter_id, { settings_id => {expire: 2, max_count: 0} })
+    @spam_stream_resistance.settings_filter_id_add(filter_id, { settings_id => {max_count_request: 10, expire: 20, increas_time: 10} })
     
-    assert_equal ( {expire: 2, max_count: 0} ), @spam_stream_resistance.settings_filter_by_id(filter_id, settings_id), "settings_filter_by_id"
+    assert_equal ( {max_count_request: 10, expire: 20, increas_time: 10} ), @spam_stream_resistance.settings_filter_by_id(filter_id, settings_id), "settings_filter_by_id"
   
+  @spam_stream_resistance.is_it_spam("str", filter_id, settings_id)
+
     @spam_stream_resistance.settings_filter_id_delete(filter_id, settings_id)
 
     assert_equal ({ filter_id => {} }), @spam_stream_resistance.settings_filter_id
+
+    
   end
 end
