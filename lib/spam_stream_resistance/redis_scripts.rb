@@ -48,27 +48,35 @@ class SpamStreamResistance::RedisScripts
          @redis_scripts["#{script_name}"] = send(script_name)
       end
     end
+    
+    def scripts_can_be_loaded(scripts = {})
+      #scripts = {"name" => "Lua script", ....}
+      can_be_loaded = {}
+      scripts.each_pair |script_name, script|
+        unless @redis_scripts_cache.include?("#{script_name}")
+          can_be_loaded["#{script_name}"] = script
+        end
+      end
+      can_be_loaded
+    end
 
     def load_script_in_redis
       #@redis_scripts_cache
-      scripts_can_be_loaded = {}
-      @scripts_have_not_been_loaded.each_pair |script_name, script|
-        unless @redis_scripts_cache.include?("#{script_name}")
-          scripts_can_be_loaded["#{script_name}"] = script
+      can_be_loaded = scripts_can_be_loaded(@scripts_have_not_been_loaded)
+      @redis_pool.with do |redis|
+        can_be_loaded.each_pair do |script_name, script|
+          @redis_scripts_cache["#{script_name}"] = ( redis.script load script )
         end
       end
-
-      scripts_can_be_loaded.each_pair do |script_name, script|
-        @redis_scripts_cache["#{script_name}"] = ( redis.script load script )
-      end
       @scripts_have_not_been_loaded = {}
-      
-    end
 
+    end
+   
     def load_all_scripts_in_redis
+      can_be_loaded = scripts_can_be_loaded(@scripts_have_not_been_loaded)
+
       @redis_pool.with do |redis|
-        #@redis_scripts_cache redis.script load ""
-        @redis_scripts.each_pair do |script_name, script|
+        can_be_loaded.each_pair do |script_name, script|
           @redis_scripts_cache["#{script_name}"] = ( redis.script load script )
         end
       end
