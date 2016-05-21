@@ -22,6 +22,7 @@ class SpamStreamResistance
   end
    
   def settings_filter_id_add(filter_id, sett = {})
+    #sett = { settings_id => {max_count_request: 10, expire: 20, increas_time: 10} }
   	#{filter_id: {settings_id: {}}, filter_id: {settings_id: {}}}
   	@settings_filter_id[filter_id].merge!(sett)
   end
@@ -120,4 +121,44 @@ byebug
  
       #true/false
     end
+
+    
+
+
+
+    def function_redis_filter_1
+      <<-EOF
+        local key = KEYS[1]
+        local max_count_request = KEYS[2]
+        local expire = KEYS[3]
+        local increas_time = KEYS[4]
+        local is_spam = true
+        local is_not_spam = false
+        local red_expire
+        local red_count
+        
+
+        red_count  = redis.call('get', key)
+        red_expire = redis.call('ttl', key)
+
+        if (red_expire == -2) then
+          redis.call('incr', key)
+          redis.call('expire', key, expire)
+          return is_not_spam
+        end
+
+        if (red_count >= max_count_request) then
+          redis.call('expire', key, (red_expire + increas_time))
+          return is_spam
+        else
+          redis.call('incr', key)
+          redis.call('expire', key, (red_expire + increas_time))
+          return is_not_spam
+        end
+        
+        return ""
+      EOF
+    end
+
+
 end
