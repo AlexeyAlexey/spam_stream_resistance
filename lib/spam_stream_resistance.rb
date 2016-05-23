@@ -1,4 +1,5 @@
 require "spam_stream_resistance/version"
+require 'spam_stream_resistance/redis_scripts'
 
 class SpamStreamResistance
   
@@ -102,7 +103,7 @@ class SpamStreamResistance
       increas_time      = settings[:increas_time]
             
       @redis_pool.with do |redis|
-byebug
+#byebug
         redis.eval(fn_redis_filter_1, [key, max_count_request, expire, increas_time])
         #redis.evalsha("4e6d8fc8bb01276962cce5371fa795a7763657ae", [""])
       end

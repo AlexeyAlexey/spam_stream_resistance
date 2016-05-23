@@ -26,7 +26,7 @@ class SpamStreamResistance::RedisScripts
   def redis_scripts_add(scripts = {})
     #script = {"name" => "Lua script"}
     scripts_can_be_added = {}
-    scripts.each_pair |script_name, script|
+    scripts.each_pair do |script_name, script|
       unless @redis_scripts_cache.include?("#{script_name}")
         scripts_can_be_added["#{script_name}"] = script
       end
@@ -52,7 +52,7 @@ class SpamStreamResistance::RedisScripts
     def scripts_can_be_loaded(scripts = {})
       #scripts = {"name" => "Lua script", ....}
       can_be_loaded = {}
-      scripts.each_pair |script_name, script|
+      scripts.each_pair do |script_name, script|
         unless @redis_scripts_cache.include?("#{script_name}")
           can_be_loaded["#{script_name}"] = script
         end
