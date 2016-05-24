@@ -9,6 +9,15 @@ class SpamStreamResistance::RedisScripts
     @scripts_have_not_been_loaded = {}
   end
 
+  def add_scripts(scripts = {})
+    {}
+  end
+
+  def execute_script_by_name(function_name, function_params = [])
+   
+    ""
+  end
+
   #scripts_have_not_been_loaded in redis
   def scripts_have_not_been_loaded
     @redis_scripts_have_not_been_loaded
