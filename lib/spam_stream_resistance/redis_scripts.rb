@@ -1,111 +1,103 @@
 class SpamStreamResistance::RedisScripts
+  HASH_SCRIPTS_NAME = "sp_str_res_redis_scripts"
 
   def initialize(redis_pool)
     @redis_pool = redis_pool
+    
+    update_scripts
 
-    init_redis_script
+    @sha1_function_add_scripts = ""
+    #load scripts
+    sha1_add_scripts = ""
+    @redis_pool.with do |redis|
+      sha1_add_scripts = redis.script 'load', lua_add_scripts
+      unless sha1_add_scripts.empty?
+        redis.evalsha sha1_add_scripts, [HASH_SCRIPTS_NAME, "add_scripts", sha1_add_scripts]
+        @sha1_function_add_scripts = sha1_add_scripts
+      end
+    end
+  end
 
-    @redis_scripts_cache = {}
-    @scripts_have_not_been_loaded = {}
+  def update_scripts
+    @redis_pool.with do |redis|
+      sha1_scripts_list = redis.hgetall HASH_SCRIPTS_NAME
+      sha1_scripts_list_values = sha1_scripts_list.values
+      sha1_scripts_list_keys   = sha1_scripts_list.keys
+      
+      sha1_script_exists = redis.script 'exists', sha1_scripts_list_values
+      delete_keys = []
+
+      sha1_script_exists.each_with_index do |value, index|
+        unless value 
+          delete_keys << sha1_scripts_list_keys[index]
+        end
+      end
+
+      unless delete_keys.empty?
+        redis.hdel HASH_SCRIPTS_NAME, delete_keys
+      end
+    end
   end
 
   def add_scripts(scripts = {})
-    {}
+    loaded = {}
+    scripts.each_pair do |script_name, script_str|
+      @redis_pool.with do |redis|
+        sha1_script = redis.script 'load', script_str
+        unless sha1_script.empty?
+          res = redis.evalsha( @sha1_function_add_scripts, [HASH_SCRIPTS_NAME, "#{script_name}", sha1_script] )
+          unless res.nil?
+            loaded[script_name] = sha1_script
+          end
+        end
+      end
+    end
+    loaded
+  end
+
+  def script_exists(name)
+    sha1_script = ""
+    @redis_pool.with do |redis|
+      sha1_script = redis.hgetall HASH_SCRIPTS_NAME, "#{name}"
+    end
+    !sha1_script.empty?
+  end
+
+
+  def all_scripts
+    scripts = {}
+    @redis_pool.with do |redis|
+      scripts = redis.hgetall HASH_SCRIPTS_NAME
+    end
+    scripts
   end
 
   def execute_script_by_name(function_name, function_params = [])
-   
     ""
   end
 
+  def redis_pool
+    @redis_pool
+  end
+
+
   #scripts_have_not_been_loaded in redis
-  def scripts_have_not_been_loaded
-    @redis_scripts_have_not_been_loaded
-  end
-
-  def redis_scripts_by_name
-
-  end
-
-  def redis_scripts_cache
-    #{"name": "2bab3b661081db58bd2341920e0ba7cf5dc77b25", ....}
-    @redis_scripts_cache = {}
-  end
-
-  def redis_scripts_add(scripts = {})
-    #script = {"name" => "Lua script"}
-    scripts_can_be_added = {}
-    scripts.each_pair do |script_name, script|
-      unless @redis_scripts_cache.include?("#{script_name}")
-        scripts_can_be_added["#{script_name}"] = script
-      end
-    end
-    @scripts_have_not_been_loaded.merge!(scripts_can_be_added)
-
-    @redis_scripts.merge!(scripts_can_be_added)
-  end
-
-  def load_unloaded_scripts_in_redis
-
-  end
-
   private
-    def init_redis_script
-      @redis_scripts = {}
-      
-      [:filter_1].each do |script_name|
-         @redis_scripts["#{script_name}"] = send(script_name)
-      end
-    end
-    
-    def scripts_can_be_loaded(scripts = {})
-      #scripts = {"name" => "Lua script", ....}
-      can_be_loaded = {}
-      scripts.each_pair do |script_name, script|
-        unless @redis_scripts_cache.include?("#{script_name}")
-          can_be_loaded["#{script_name}"] = script
+    def lua_add_scripts
+      <<-EOF
+        local hash_name     = KEYS[1]
+        local script_name   = KEYS[2]
+        local script_sha1   = KEYS[3]
+        local script_exist
+
+        script_exist  = redis.call('hexists', hash_name, script_name)
+        
+        if (script_exist == 1) then
+          return false
+        else
+          return ( redis.call('hset', hash_name, script_name, script_sha1) )
         end
-      end
-      can_be_loaded
-    end
-
-    def load_script_in_redis
-      #@redis_scripts_cache
-      can_be_loaded = scripts_can_be_loaded(@scripts_have_not_been_loaded)
-      @redis_pool.with do |redis|
-        can_be_loaded.each_pair do |script_name, script|
-          @redis_scripts_cache["#{script_name}"] = ( redis.script load script )
-        end
-      end
-      @scripts_have_not_been_loaded = {}
-
-    end
-   
-    def load_all_scripts_in_redis
-      can_be_loaded = scripts_can_be_loaded(@scripts_have_not_been_loaded)
-
-      @redis_pool.with do |redis|
-        can_be_loaded.each_pair do |script_name, script|
-          @redis_scripts_cache["#{script_name}"] = ( redis.script load script )
-        end
-      end
-    end
-
-    def reload_all_scripts
-
-    end
-
-    def redis_scripts
-      #{"name" => "Lua script", "filter_2" => "Lua script", ...}
-      @redis_scripts
-    end
-
-
-
-    def redis_scripts_load(name)
-      @redis_pool.with do |redis|
-        #@redis_scripts_cache redis.script load ""
-      end
+      EOF
     end
 
 #Filter scripts
