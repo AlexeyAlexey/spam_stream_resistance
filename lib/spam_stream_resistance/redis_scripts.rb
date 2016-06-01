@@ -7,6 +7,9 @@ class SpamStreamResistance::RedisScripts
     update_scripts
 
     @sha1_function_add_scripts = ""
+
+    @service_functions = ["add_scripts"]
+
     #load scripts
     sha1_add_scripts = ""
     @redis_pool.with do |redis|
@@ -16,6 +19,7 @@ class SpamStreamResistance::RedisScripts
         @sha1_function_add_scripts = sha1_add_scripts
       end
     end
+
   end
 
   def update_scripts
@@ -72,8 +76,20 @@ class SpamStreamResistance::RedisScripts
     scripts
   end
 
+  #return hash {script_name => sha1}
+  def list_of_scripts
+    all_scripts.delete_if {|key, value| @service_functions.include?("#{key}") }
+  end
+
   def execute_script_by_name(function_name, function_params = [])
-    ""
+    res = nil
+    @redis_pool.with do |redis|
+      function_sha1 = redis.hget HASH_SCRIPTS_NAME, "#{function_name}"
+      unless function_sha1.nil? 
+        res = redis.evalsha( function_sha1, function_params )
+      end
+    end
+    res
   end
 
   def redis_pool
