@@ -81,7 +81,7 @@ class SpamStreamResistance::RedisScripts
     all_scripts.delete_if {|key, value| @service_functions.include?("#{key}") }
   end
 
-  def execute_script_by_name(function_name, function_params = [])
+  def execute_script_by_name(function_name, function_params = []) 
     res = nil
     @redis_pool.with do |redis|
       function_sha1 = redis.hget HASH_SCRIPTS_NAME, "#{function_name}"

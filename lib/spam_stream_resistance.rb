@@ -25,7 +25,10 @@ class SpamStreamResistance
     @redis_script_menager.list_of_scripts.keys
   end
 
- 
+  def filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+    #"filter_1::#{key}"
+    @redis_script_menager.execute_script_by_name("filter_1", ["filter_1:#{key}", max_count_of_request, lifetime_of_the_key, increas_time])
+  end
 
   private
     def init_filters
@@ -39,8 +42,8 @@ class SpamStreamResistance
     def lua_redis_filter_1
       <<-EOF
         local key = KEYS[1]
-        local max_count_request = KEYS[2]
-        local expire = KEYS[3]
+        local max_count_request = tonumber( KEYS[2] )
+        local expire = tonumber( KEYS[3] )
         local increas_time = KEYS[4]
         local is_spam = true
         local is_not_spam = false
@@ -48,9 +51,9 @@ class SpamStreamResistance
         local red_count
         
 
-        red_count  = redis.call('get', key)
+        red_count  = tonumber( redis.call('get', key) )
         red_expire = redis.call('ttl', key)
-
+        
         if (red_expire == -2) then
           redis.call('incr', key)
           redis.call('expire', key, expire)
@@ -62,7 +65,7 @@ class SpamStreamResistance
           return is_spam
         else
           redis.call('incr', key)
-          redis.call('expire', key, (red_expire + increas_time))
+          redis.call('expire', key, red_expire)
           return is_not_spam
         end
         
