@@ -20,7 +20,7 @@ class TestSpamStreamResistance < Minitest::Test
     assert filters_list.include?("filter_3"), "Filter 3 does not exist"
   end
 
-  def test_filter_1
+  def test_filter_1_must_be_spam
     #key - email address or something else. (string type)
     #increas_time - seconds
     # Count of requests is stored in a key
@@ -31,15 +31,23 @@ class TestSpamStreamResistance < Minitest::Test
     # filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
     #If count of requests more than can be, the filter_1 return true else false
     #If the filter_1 return empty string, it might be something wrong
-
+    
     key = "user@mail.com"
     max_count_of_request = 10
-    lifetime_of_the_key  = 20
+    lifetime_of_the_key  = 7
     increas_time         = 5
 
     #if spam return 1 else return nil
+    
+    @redis.get "filter_1:#{key}"
+    
+    measure_the_time = Benchmark.measure do 
+      10.times do |i|
+        @spam_stream_resistance.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+      end
+    end
 
-    @spam_stream_resistance.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+    assert @spam_stream_resistance.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time) == 1 and measure_the_time.real < lifetime_of_the_key
 
   end
 end

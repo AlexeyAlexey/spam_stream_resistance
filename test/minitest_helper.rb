@@ -9,3 +9,5 @@ require 'minitest/autorun'
 require  "redis"  
 require  "connection_pool"
 require  "byebug"
+
+require 'benchmark'
