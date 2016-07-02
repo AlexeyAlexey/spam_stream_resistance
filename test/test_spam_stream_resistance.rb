@@ -47,7 +47,7 @@ class TestSpamStreamResistance < Minitest::Test
       end
     end
 
-    assert @spam_stream_resistance.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time) == 1 and measure_the_time.real < lifetime_of_the_key
+    assert @spam_stream_resistance.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time) and measure_the_time.real < lifetime_of_the_key
 
   end
 end
