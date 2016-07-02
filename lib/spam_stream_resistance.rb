@@ -39,6 +39,20 @@ class SpamStreamResistance
     end
   end
 
+  def filter_key_exists?(filter, key)
+    exist = false
+    @redis_pool.with do |redis|
+      exist = redis.exists "#{filter}:#{key}"
+    end
+    exist
+  end
+
+  def delete_key_from_filter(filter, key)
+    @redis_pool.with do |redis|
+      redis.del "#{filter}:#{key}"
+    end
+  end
+
   private
     def init_filters
       @redis_script_menager.add_scripts({filter_1: lua_redis_filter_1, 
@@ -90,6 +104,34 @@ class SpamStreamResistance
 
     def lua_redis_filter_3
       <<-EOF
+        local key = KEYS[1]
+        local max_count_of_request = tonumber( KEYS[2] )
+        local expire = tonumber( KEYS[3] )
+        local increas_time = KEYS[4]
+        local is_spam = true
+        local is_not_spam = false
+        local red_expire
+        local red_count
+        
+
+        red_count  = tonumber( redis.call('get', key) )
+        red_expire = redis.call('ttl', key)
+        
+        if (red_expire == -2) then
+          redis.call('incr', key)
+          redis.call('expire', key, expire)
+          return is_not_spam
+        end
+
+        if (red_count >= max_count_of_request) then
+          redis.call('expire', key, (red_expire + increas_time))
+          return is_spam
+        else
+          redis.call('incr', key)
+          redis.call('expire', key, red_expire)
+          return is_not_spam
+        end
+        
         return ""
       EOF
     end
