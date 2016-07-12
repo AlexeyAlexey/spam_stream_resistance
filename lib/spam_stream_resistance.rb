@@ -39,6 +39,10 @@ class SpamStreamResistance
     end
   end
 
+  def execute_filter_by_name(filter_name, params)
+    @redis_script_menager.execute_script_by_name(filter_name, params)
+  end
+
   def filter_key_exists?(filter, key)
     exist = false
     @redis_pool.with do |redis|
@@ -51,6 +55,14 @@ class SpamStreamResistance
     @redis_pool.with do |redis|
       redis.del "#{filter}:#{key}"
     end
+  end
+
+  def add_filter(name, lua_script)
+    @redis_script_menager.add_scripts({name => lua_script})
+  end
+
+  def script_exists?(name)
+    @redis_script_menager.script_exists?(name)
   end
 
   private

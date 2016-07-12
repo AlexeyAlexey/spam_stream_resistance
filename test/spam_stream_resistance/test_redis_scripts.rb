@@ -82,6 +82,13 @@ class SpamStreamResistance::TestRedisScripts < Minitest::Test
     assert (list_of_scripts.keys == ["set_string_value", "get_string_value"]), "Should return set_string_value and get_string_value"
   end
 
+  def test_filter_exist
+    @redis_scripts_1.add_scripts({set_string_value: redis_lua_script_set_string_value})
+    
+    assert @redis_scripts_1.script_exists?(:set_string_value), "should exist"
+    assert @redis_scripts_1.script_exists?(:set_string_value_1) == false, "should not exist"
+  end
+
 
   def redis_lua_script_set_string_value
   	<<-EOF

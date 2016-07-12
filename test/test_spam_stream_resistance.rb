@@ -1,6 +1,7 @@
 require 'minitest_helper'
 
 #rake test TEST=test/test_spam_stream_resistance.rb
+#rake test TEST=test/test_spam_stream_resistance.rb TESTOPTS="--name=test_should_add_new_filter -v"
 class TestSpamStreamResistance < Minitest::Test
   def setup
   	#default settings { redis: {host: 'localhost', port: 6379}, connection_pool: {size: 5, timeout: 2} }
@@ -51,7 +52,7 @@ class TestSpamStreamResistance < Minitest::Test
 
   end
 
-  def g_test_filter_1_must_not_be_spam_time_expired
+  def test_filter_1_must_not_be_spam_time_expired
     #key - email address or something else. (string type)
     #increas_time - seconds
     # Count of requests is stored in a key
@@ -120,6 +121,25 @@ class TestSpamStreamResistance < Minitest::Test
     assert @spam_stream_resistance.filter_key_exists?(filter_name, key) == false
     
     
+
+  end
+
+  def test_should_add_new_filter
+    
+    filter_name = "true_false"
+    lua_script = <<-EOF
+      local arg1  = tonumber( KEYS[1] )
+      local arg2  = tonumber( KEYS[2] )
+      return arg1 + arg2
+    EOF
+
+    params = [1, 2]
+
+    @spam_stream_resistance.add_filter(filter_name, lua_script)
+
+    assert @spam_stream_resistance.filter_exist?(filter_name), "should exist"
+
+    assert @spam_stream_resistance.execute_filter_by_name(filter_name, params) == 3, "should be 3"
 
   end
 end

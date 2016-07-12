@@ -59,12 +59,12 @@ class SpamStreamResistance::RedisScripts
     loaded
   end
 
-  def script_exists(name)
-    sha1_script = ""
+  def script_exists?(name)
+    sha1_script = false
     @redis_pool.with do |redis|
-      sha1_script = redis.hgetall HASH_SCRIPTS_NAME, "#{name}"
+      sha1_script = redis.hexists HASH_SCRIPTS_NAME, "#{name}"
     end
-    !sha1_script.empty?
+    sha1_script
   end
 
 
