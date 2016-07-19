@@ -13,6 +13,8 @@ class SpamStreamResistance
     
     @redis_script_menager = RedisScripts.new(@redis_pool)
 
+    @white_black_list = WhiteBlackList.new(@redis_pool)
+
   end
 
   def redis_pool
