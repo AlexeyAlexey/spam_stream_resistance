@@ -24,19 +24,19 @@ class SpamStreamResistance
     @redis_script_menager.list_of_scripts.keys
   end
 
-  def filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+  #def filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
     #"filter_1::#{key}"
     #if spam return 1 else return nil
-    res = @redis_script_menager.execute_script_by_name("filter_1", ["filter_1:#{key}", max_count_of_request, lifetime_of_the_key, increas_time])
-    if res == 1
-      return true
-    elsif res.nil?
-      return false
-    else
+  #  res = @redis_script_menager.execute_script_by_name("filter_1", ["filter_1:#{key}", max_count_of_request, lifetime_of_the_key, increas_time])
+  #  if res == 1
+  #    return true
+  #  elsif res.nil?
+  #    return false
+  #  else
       #something wrong
-      return ""
-    end
-  end
+  #    return ""
+  #  end
+  #end
 
   def execute_filter_by_name(filter_name, params)
     params[0] = "#{filter_name}:#{params[0]}"
