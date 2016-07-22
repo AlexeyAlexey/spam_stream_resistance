@@ -18,41 +18,119 @@ class SpamStreamResistance::TestWhiteBlackList < Minitest::Test
   end
 
   def test_add_in_black_list
-    white_black_list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
+    list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
 
-    name_of_black_list = "list_1"
+    name_of_list = "list_1"
     keys  = ["1@mail.com", "2@mail.com"]
 
-    white_black_list.add_in_black(name_of_black_list, keys)
+    list.add_in_black(name_of_list, keys)
     
-    assert white_black_list.black_list_exist?(name_of_black_list)
+    assert list.black_list_exist?(name_of_list)
 
-    assert white_black_list.black_list_include?(name_of_black_list, keys[0])
-    assert white_black_list.black_list_include?(name_of_black_list, keys[1])
+    assert list.black_list_include?(name_of_list, keys[0])
+    assert list.black_list_include?(name_of_list, keys[1])
 
-    assert white_black_list.delete_black_list(name_of_black_list)
-    assert white_black_list.black_list_exist?(name_of_black_list) == false
+    assert list.delete_keys_from_black_list(name_of_list, [ keys[1] ])
+    assert list.black_list_include?(name_of_list, keys[1]) == false
+
+    assert list.delete_black_list(name_of_list)
+    assert list.black_list_exist?(name_of_list) == false
 
     
   end
 
   def test_add_in_white_list
-    white_black_list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
+    list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
 
-    name_of_white_list = "list_1"
+    name_of_list = "list_1"
     keys  = ["1@mail.com", "2@mail.com"]
 
-    white_black_list.add_in_white(name_of_white_list, keys)
+    list.add_in_white(name_of_list, keys)
     
-    assert white_black_list.white_list_exist?(name_of_white_list)
+    assert list.white_list_exist?(name_of_list)
 
-    assert white_black_list.white_list_include?(name_of_white_list, keys[0])
-    assert white_black_list.white_list_include?(name_of_white_list, keys[1])
+    assert list.white_list_include?(name_of_list, keys[0])
+    assert list.white_list_include?(name_of_list, keys[1])
 
-    assert white_black_list.delete_white_list(name_of_white_list)
-    assert white_black_list.white_list_exist?(name_of_white_list) == false
+    assert list.delete_keys_from_white_list(name_of_list, [ keys[1] ])
+    assert list.white_list_include?(name_of_list, keys[1]) == false
+
+    assert list.delete_white_list(name_of_list)
+    assert list.white_list_exist?(name_of_list) == false
 
     
+  end
+
+  def test_black_list_expire
+    expire = 5 #seconds
+    
+    list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
+
+    name_of_list = "list_1"
+    keys  = ["1@mail.com", "2@mail.com"]
+
+    list.add_in_black(name_of_list, keys)
+    
+    assert list.black_list_exist?(name_of_list)
+
+    assert list.black_list_include?(name_of_list, keys[0])
+    assert list.black_list_include?(name_of_list, keys[1])
+
+    assert list.black_list_set_expire(name_of_list, 10)
+    
+    #add delete
+    list.add_in_black(name_of_list, ["add_new_key"])
+    
+    assert list.black_list_include?(name_of_list, ["add_new_key"])
+    
+    list.delete_keys_from_black_list(name_of_list, ["add_new_key"])
+
+    assert list.black_list_include?(name_of_list, "add_new_key") == false
+    #
+
+    #check time
+    assert list.black_list_check_expire(name_of_list) > 5
+
+    assert list.black_list_delete_expire(name_of_list)
+
+    assert list.black_list_check_expire(name_of_list) == -1
+
+  end
+
+  def test_white_list_expire
+    expire = 5 #seconds
+    
+    list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
+
+    name_of_list = "list_1"
+    keys  = ["1@mail.com", "2@mail.com"]
+
+    list.add_in_white(name_of_list, keys)
+    
+    assert list.white_list_exist?(name_of_list)
+
+    assert list.white_list_include?(name_of_list, keys[0])
+    assert list.white_list_include?(name_of_list, keys[1])
+
+    assert list.white_list_set_expire(name_of_list, 10)
+    
+    #add delete
+    list.add_in_white(name_of_list, ["add_new_key"])
+    
+    assert list.white_list_include?(name_of_list, ["add_new_key"])
+    
+    list.delete_keys_from_white_list(name_of_list, ["add_new_key"])
+
+    assert list.white_list_include?(name_of_list, "add_new_key") == false
+    #
+
+    #check time
+    assert list.white_list_check_expire(name_of_list) > 5
+
+    assert list.white_list_delete_expire(name_of_list)
+
+    assert list.white_list_check_expire(name_of_list) == -1
+
   end
 
 
