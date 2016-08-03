@@ -8,18 +8,18 @@ class TestSpamStreamResistance < Minitest::Test
     #Flush the Lua scripts cache 
     @redis = Redis.new({host: 'localhost', port: 6379, db: 10})
     @redis.script "FLUSH"
-    @spam_stream_resistance = SpamStreamResistance.new({ redis: {host: 'localhost', port: 6379, db: 10}, connection_pool: {size: 5, timeout: 2} })
+    @spam = SpamStreamResistance.new({ redis: {host: 'localhost', port: 6379, db: 10}, connection_pool: {size: 5, timeout: 2} })
     
   end
 
   def test_user_can_use_already_exist_three_lua_scripts
     #[filter_1, filter_2, filter_3]
     
-    @spam_stream_resistance.add_filter("filter_1", @spam_stream_resistance.lua_redis_filter_1)
-    @spam_stream_resistance.add_filter("filter_2", @spam_stream_resistance.lua_redis_filter_2)
-    @spam_stream_resistance.add_filter("filter_3", @spam_stream_resistance.lua_redis_filter_3)
+    @spam.add_filter("filter_1", @spam.lua_redis_filter_1)
+    @spam.add_filter("filter_2", @spam.lua_redis_filter_2)
+    @spam.add_filter("filter_3", @spam.lua_redis_filter_3)
 
-    filters_list = @spam_stream_resistance.filters_list
+    filters_list = @spam.filters_list
 
     assert filters_list.include?("filter_1"), "Filter 1 does not exist"
     assert filters_list.include?("filter_2"), "Filter 2 does not exist"
@@ -49,16 +49,16 @@ class TestSpamStreamResistance < Minitest::Test
     @redis.get "filter_1:#{key}"
 
     #create filter
-    @spam_stream_resistance.add_filter("filter_1", @spam_stream_resistance.lua_redis_filter_1)
+    @spam.add_filter("filter_1", @spam.lua_redis_filter_1)
     
     measure_the_time = Benchmark.measure do 
       10.times do |i|
-        #@spam_stream_resistance.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
-        @spam_stream_resistance.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
+        #@spam.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+        @spam.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
       end
     end
 
-    assert @spam_stream_resistance.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time]) and measure_the_time.real < lifetime_of_the_key
+    assert @spam.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time]) and measure_the_time.real < lifetime_of_the_key
 
   end
 
@@ -80,14 +80,14 @@ class TestSpamStreamResistance < Minitest::Test
     increas_time         = 5
 
     #if spam return 1 else return nil
-    @spam_stream_resistance.add_filter("filter_1", @spam_stream_resistance.lua_redis_filter_1)
+    @spam.add_filter("filter_1", @spam.lua_redis_filter_1)
     
     @redis.del "filter_1:#{key}"
     
     measure_the_time = Benchmark.measure do 
       10.times do |i|
-        #@spam_stream_resistance.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
-        @spam_stream_resistance.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
+        #@spam.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+        @spam.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
       end
     end
     
@@ -95,7 +95,7 @@ class TestSpamStreamResistance < Minitest::Test
   
     sleep (time_sleep)
 
-    assert !@spam_stream_resistance.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
+    assert !@spam.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
 
   end
 
@@ -109,10 +109,10 @@ class TestSpamStreamResistance < Minitest::Test
     
     @redis.del "#{filter_name}:#{key}"
 
-    @spam_stream_resistance.add_filter(filter_name, @spam_stream_resistance.lua_redis_filter_1)
-    @spam_stream_resistance.execute_filter_by_name(filter_name ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
+    @spam.add_filter(filter_name, @spam.lua_redis_filter_1)
+    @spam.execute_filter_by_name(filter_name ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
 
-    assert @spam_stream_resistance.filter_key_exists?(filter_name, key)
+    assert @spam.filter_key_exists?(filter_name, key)
   end
 
   def test_delete_key_from_filter
@@ -125,16 +125,16 @@ class TestSpamStreamResistance < Minitest::Test
     
     @redis.del "#{filter_name}:#{key}"
 
-    @spam_stream_resistance.add_filter(filter_name, @spam_stream_resistance.lua_redis_filter_1)
-    @spam_stream_resistance.execute_filter_by_name(filter_name, [key, max_count_of_request, lifetime_of_the_key, increas_time])
+    @spam.add_filter(filter_name, @spam.lua_redis_filter_1)
+    @spam.execute_filter_by_name(filter_name, [key, max_count_of_request, lifetime_of_the_key, increas_time])
 
-    #@spam_stream_resistance.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+    #@spam.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
 
-    assert @spam_stream_resistance.filter_key_exists?(filter_name, key)
+    assert @spam.filter_key_exists?(filter_name, key)
 
-    @spam_stream_resistance.delete_key_from_filter(filter_name, key)
+    @spam.delete_key_from_filter(filter_name, key)
     
-    assert @spam_stream_resistance.filter_key_exists?(filter_name, key) == false
+    assert @spam.filter_key_exists?(filter_name, key) == false
     
     
 
@@ -153,11 +153,11 @@ class TestSpamStreamResistance < Minitest::Test
     key = "123"
     params = [key, 1, 2]
 
-    @spam_stream_resistance.add_filter(filter_name, lua_script)
+    @spam.add_filter(filter_name, lua_script)
 
-    assert @spam_stream_resistance.filter_exist?(filter_name), "should exist"
+    assert @spam.filter_exist?(filter_name), "should exist"
 
-    assert @spam_stream_resistance.execute_filter_by_name(filter_name, params) == 3, "should be 3"
+    assert @spam.execute_filter_by_name(filter_name, params) == 3, "should be 3"
 
   end
 
@@ -171,10 +171,10 @@ class TestSpamStreamResistance < Minitest::Test
         
     @redis.del "#{filter_name}:#{key}"
 
-    @spam_stream_resistance.add_filter(filter_name, @spam_stream_resistance.lua_redis_filter_1)
-    @spam_stream_resistance.execute_filter_by_name(filter_name, [key, max_count_of_request, lifetime_of_the_key, increas_time])
+    @spam.add_filter(filter_name, @spam.lua_redis_filter_1)
+    @spam.execute_filter_by_name(filter_name, [key, max_count_of_request, lifetime_of_the_key, increas_time])
 
     
-    assert @spam_stream_resistance.filter_time_of_key(filter_name, key) > 55
+    assert @spam.filter_time_of_key(filter_name, key) > 55
   end
 end
