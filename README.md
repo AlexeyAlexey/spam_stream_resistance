@@ -8,11 +8,11 @@ This library uses the redis and next libraries “redis" and "connection_pool"
 - You can use a script manager
 
 
-**For example we have POST API in JSON format** 
+**Example,  POST API in JSON format:** 
 
 ```
 {“client_email”: “client@mail.com”,
-…...
+ ...
 }
 ```
 We should send an email to the address that (is value of “client_email” key) we have in the “client_email” key
