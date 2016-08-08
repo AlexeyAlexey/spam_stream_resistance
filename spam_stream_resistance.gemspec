@@ -13,9 +13,12 @@ Gem::Specification.new do |spec|
     spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com' to prevent pushes to rubygems.org, or delete to allow pushes to any server."
   end
 
-  spec.summary       = 'Write a short summary, because Rubygems requires one.'
+  spec.summary       = 'This library could be used as a spam filter or(and) script manager and could create the black or white lists'
   spec.description   = <<-EOS 
-    Write a longer description or delete this line.
+    You can use this library as a spam filter.
+    You can add your own filter(scripts) and execute them. (You have to use a key as the first parameter when executing the filter)
+    You can create a black or white list with or without time expiration (lifetime) of this list
+    You can use a script manager
   EOS
   spec.homepage      = "TODO: Put your gem's website or public repo URL here."
   spec.license       = "MIT"
