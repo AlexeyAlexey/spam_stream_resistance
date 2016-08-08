@@ -34,12 +34,12 @@ class TestSpamStreamResistance < Minitest::Test
     # If count of requests more than can be, the filter will increase the lifetime of the key (email address) on increas_time
     #but will not increase count of requests that associated with key
     #but will not increase count of requests in key
-    # filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+    # filter_1(key, max_number_of_requests, lifetime_of_the_key, increas_time)
     #If count of requests more than can be, the filter_1 return true else false
     #If the filter_1 return empty string, it might be something wrong
     
     key = "user@mail.com"
-    max_count_of_request = 10
+    max_number_of_requests = 10
     lifetime_of_the_key  = 7
     increas_time         = 5
 
@@ -53,12 +53,12 @@ class TestSpamStreamResistance < Minitest::Test
     
     measure_the_time = Benchmark.measure do 
       10.times do |i|
-        #@spam.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
-        @spam.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
+        #@spam.filter_1(key, max_number_of_requests, lifetime_of_the_key, increas_time)
+        @spam.execute_filter_by_name("filter_1" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time])
       end
     end
 
-    assert @spam.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time]) and measure_the_time.real < lifetime_of_the_key
+    assert @spam.execute_filter_by_name("filter_1" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) and measure_the_time.real < lifetime_of_the_key
 
   end
 
@@ -70,12 +70,12 @@ class TestSpamStreamResistance < Minitest::Test
     # If count of requests more than can be, the filter will increase the lifetime of the key (email address) on increas_time
     #but will not increase count of requests that associated with key
     #but will not increase count of requests in key
-    # filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+    # filter_1(key, max_number_of_requests, lifetime_of_the_key, increas_time)
     #If count of requests more than can be, the filter_1 return true else false
     #If the filter_1 return empty string, it might be something wrong
     
     key = "user@mail.com"
-    max_count_of_request = 10
+    max_number_of_requests = 10
     lifetime_of_the_key  = 7
     increas_time         = 5
 
@@ -86,8 +86,8 @@ class TestSpamStreamResistance < Minitest::Test
     
     measure_the_time = Benchmark.measure do 
       10.times do |i|
-        #@spam.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
-        @spam.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
+        #@spam.filter_1(key, max_number_of_requests, lifetime_of_the_key, increas_time)
+        @spam.execute_filter_by_name("filter_1" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time])
       end
     end
     
@@ -95,13 +95,13 @@ class TestSpamStreamResistance < Minitest::Test
   
     sleep (time_sleep)
 
-    assert !@spam.execute_filter_by_name("filter_1" ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
+    assert !@spam.execute_filter_by_name("filter_1" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time])
 
   end
 
   def test_key_exist_in_filter
     key = "user@mail.com"
-    max_count_of_request = 10
+    max_number_of_requests = 10
     lifetime_of_the_key  = 60
     increas_time         = 5
 
@@ -110,7 +110,7 @@ class TestSpamStreamResistance < Minitest::Test
     @redis.del "#{filter_name}:#{key}"
 
     @spam.add_filter(filter_name, @spam.lua_redis_filter_1)
-    @spam.execute_filter_by_name(filter_name ,[key, max_count_of_request, lifetime_of_the_key, increas_time])
+    @spam.execute_filter_by_name(filter_name ,[key, max_number_of_requests, lifetime_of_the_key, increas_time])
 
     assert @spam.filter_key_exists?(filter_name, key)
   end
@@ -119,16 +119,16 @@ class TestSpamStreamResistance < Minitest::Test
     key = "user@mail.com"
     filter_name = "filter_1"
 
-    max_count_of_request = 10
+    max_number_of_requests = 10
     lifetime_of_the_key  = 60
     increas_time         = 5
     
     @redis.del "#{filter_name}:#{key}"
 
     @spam.add_filter(filter_name, @spam.lua_redis_filter_1)
-    @spam.execute_filter_by_name(filter_name, [key, max_count_of_request, lifetime_of_the_key, increas_time])
+    @spam.execute_filter_by_name(filter_name, [key, max_number_of_requests, lifetime_of_the_key, increas_time])
 
-    #@spam.filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+    #@spam.filter_1(key, max_number_of_requests, lifetime_of_the_key, increas_time)
 
     assert @spam.filter_key_exists?(filter_name, key)
 
@@ -165,14 +165,14 @@ class TestSpamStreamResistance < Minitest::Test
     key = "user@mail.com"
     filter_name = "filter_1"
 
-    max_count_of_request = 1
+    max_number_of_requests = 1
     lifetime_of_the_key  = 60
     increas_time         = 1
         
     @redis.del "#{filter_name}:#{key}"
 
     @spam.add_filter(filter_name, @spam.lua_redis_filter_1)
-    @spam.execute_filter_by_name(filter_name, [key, max_count_of_request, lifetime_of_the_key, increas_time])
+    @spam.execute_filter_by_name(filter_name, [key, max_number_of_requests, lifetime_of_the_key, increas_time])
 
     
     assert @spam.filter_time_of_key(filter_name, key) > 55
