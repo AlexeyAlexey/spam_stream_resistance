@@ -69,9 +69,13 @@ EOF
 ```
 
 **filter_1** realises the following logics
+
 **key** - an email address or something else. (string type)
+
 **increas_time** - seconds (increase_time)
+
 **max_number_of_requests** - max count of requests (max_number_of_requests)
+
 The number of requests is stored in a **key**
 The filter checks if the number of requests in a **key** (email address) is lower than can be in a lifetime of the **key**
 If the number of requests is higher than can be, the filter will increase the lifetime of the **key** (email address) on  **increas_time** but will not increase the number of requests that are associated with the **key**
@@ -146,6 +150,7 @@ increas_time         = 5
 
 ### Add your own filter
 
+You have to use a key as the first parameter when executing the filter
 
 **Example**
 
