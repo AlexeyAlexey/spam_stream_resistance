@@ -34,7 +34,7 @@ Initialize
 
 
 **@spam.lua_redis_filter_1** returns lua script as string
-```
+```ruby
 <<-EOF
       local key = KEYS[1]
       local max_count_request = tonumber( KEYS[2] )
@@ -65,7 +65,7 @@ Initialize
       end
       
       return ""
-    EOF
+EOF
 ```
 
 **filter_1** realises the following logics
@@ -74,20 +74,20 @@ Initialize
 **max_number_of_requests** - max count of requests (max_number_of_requests)
 The number of requests is stored in a **key**
 The filter checks if the number of requests in a **key** (email address) is lower than can be in a lifetime of the **key**
-If the number of requests is higher than can be, the filter will increase the lifetime of the **key** (email address) on **increas_time** but will not increase the number of requests that are associated with the **key**
+If the number of requests is higher than can be, the filter will increase the lifetime of the **key** (email address) on  **increas_time** but will not increase the number of requests that are associated with the **key**
 If the number of requests is higher than can be, the filter_1 returns **1** (spam) or **nil** (not spam)
 If the **filter_1** returns the empty string, there might be something wrong
 
 
 ### For executing the filter
 
-```
+```ruby
 @spam.execute_filter_by_name( "filter_1" , [ key, max_number_of_requests, lifetime_of_the_key, increas_time ] )
 ```
 
 **Example**
 
-```
+```ruby
 key = "user@mail.com"
 max_number_of_requests = 10
 lifetime_of_the_key  = 7
@@ -108,7 +108,7 @@ The method `execute_filter_by_name(name_of_filter_as_string, array_of_params)` t
 
 **Example**
 
-```
+```ruby
 key = "user@mail.com"
 max_number_of_requests = 10
 lifetime_of_the_key  = 7
@@ -127,7 +127,7 @@ increas_time         = 5
 
 **Example**
 
-```
+```ruby
 key = "user@mail.com"
 max_number_of_requests = 10
 lifetime_of_the_key  = 7
@@ -149,7 +149,7 @@ increas_time         = 5
 
 **Example**
 
-```
+```ruby
 filter_name = "true_false"
 lua_script = <<-EOF
       local key   = KEYS[1]
@@ -158,14 +158,14 @@ lua_script = <<-EOF
       return arg2 + arg3
 EOF
 
-    key = "123"
-    params = [key, 1, 2]
+key = "123"
+params = [key, 1, 2]
 
-    @spam.add_filter(filter_name, lua_script) #=> {"true_false" => “SHA1 digest”}
+@spam.add_filter(filter_name, lua_script) #=> {"true_false" => “SHA1 digest”}
 
-    @spam.filter_exist?(filter_name) #=> true
+@spam.filter_exist?(filter_name) #=> true
 
-    @spam.execute_filter_by_name(filter_name, params) #=> 3
+@spam.execute_filter_by_name(filter_name, params) #=> 3
  
 ```
 
@@ -173,7 +173,7 @@ EOF
 
 **Example**
 
-```
+```ruby
 key = "user@mail.com"
 filter_name = "filter_1"
 
@@ -184,8 +184,7 @@ increas_time         = 1
 @spam.add_filter(filter_name, @spam.lua_redis_filter_1)
 @spam.execute_filter_by_name(filter_name, [key, max_number_of_requests, lifetime_of_the_key, increas_time])
 
-    
- @spam.filter_time_of_key(filter_name, key) #=>returns the current lifetime of the key in the filter
+@spam.filter_time_of_key(filter_name, key) #=>returns the current lifetime of the key in the filter
 
 ```
 
@@ -194,7 +193,7 @@ increas_time         = 1
 
 **Example**
 
-```
+```ruby
 @spam.redis_pool.with do |redis|
   exist = redis.exists "#{filter}:#{key}"
 end
@@ -206,7 +205,7 @@ end
 
 ### Create a Black List
 
-```
+```ruby
 redis_sett   = {host: 'localhost', port: 6379}
 connection_pool_sett = {size: 5, timeout: 2}
 
@@ -216,7 +215,7 @@ connection_pool_sett = {size: 5, timeout: 2}
 #@spam = SpamStreamResistance.new({ redis: {host: 'localhost', port: 6379, db: 10}, connection_pool: {size: 5, timeout: 2} })
 #@spam.redis_pool  => @redis_pool
 
-**list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)**
+list = SpamStreamResistance::WhiteBlackList.new(@redis_pool) # <=========
 
 name_of_list = "list_1"
 keys  = ["1@mail.com", "2@mail.com"]
@@ -250,7 +249,7 @@ list.black_list_exist?(name_of_list) #=>  false
 
 ### Create a Whitelist 
 
-```
+```ruby
 list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
 
 name_of_list = "list_1"
@@ -281,7 +280,7 @@ list.white_list_exist?(name_of_list) == false
 
 ### Create the lifetime of a blacklist or a whitelist
  
-```
+```ruby
 expire = 5 #lifetime in seconds  
     
 list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
@@ -312,7 +311,7 @@ list.black_list_check_expire(name_of_list)# => -1
 
 ### Whitelist 
 
-```
+```ruby
 name_of_list = "list_1"
 keys  = ["1@mail.com", "2@mail.com"]
 
@@ -324,7 +323,7 @@ list.white_list_include?(name_of_list, keys[0])
 list.white_list_include?(name_of_list, keys[1])
 
 #set the lifetime of the list for 10 seconds
-**list.white_list_set_expire(name_of_list, 10)**
+list.white_list_set_expire(name_of_list, 10)  #<======================
     
 #you can check the lifetime of the list
 list.white_list_check_expire(name_of_list) #=> seconds
@@ -340,7 +339,7 @@ list.white_list_check_expire(name_of_list) #=> -1
 
 **The same connections have the same functions**
 
-```
+```ruby
 #Initialize 
 redis_sett = {host: 'localhost', port: 6379}
 connection_pool_sett = {size: 5, timeout: 2}
