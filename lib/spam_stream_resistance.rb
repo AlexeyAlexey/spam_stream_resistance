@@ -26,10 +26,10 @@ class SpamStreamResistance
     @redis_script_menager.list_of_scripts.keys
   end
 
-  #def filter_1(key, max_count_of_request, lifetime_of_the_key, increas_time)
+  #def filter_1(key, max_number_of_requests, lifetime_of_the_key, increas_time)
     #"filter_1::#{key}"
     #if spam return 1 else return nil
-  #  res = @redis_script_menager.execute_script_by_name("filter_1", ["filter_1:#{key}", max_count_of_request, lifetime_of_the_key, increas_time])
+  #  res = @redis_script_menager.execute_script_by_name("filter_1", ["filter_1:#{key}", max_number_of_requests, lifetime_of_the_key, increas_time])
   #  if res == 1
   #    return true
   #  elsif res.nil?
@@ -83,11 +83,20 @@ class SpamStreamResistance
     #                                    })
     #end
 
-
+  #filter_1 realises the following logics
+  #key - an email address or something else. (string type)
+  #increas_time - seconds (increase_time)
+  #max_number_of_requests - max count of requests (max_number_of_requests)
+  #The number of requests is stored in a key
+  #The filter checks if the number of requests in a key (email address) is lower than can be in a lifetime of the key
+  #If the number of requests is higher than can be, the filter will increase the lifetime of the key (email address) on increas_time
+  #but will not increase the number of requests that are associated with the key
+  #If the number of requests is higher than can be, the filter_1 returns 1 (spam) or nil (not spam)
+  #If the filter_1 returns the empty string, there might be something wrong
   def lua_redis_filter_1
     <<-EOF
       local key = KEYS[1]
-      local max_count_request = tonumber( KEYS[2] )
+      local max_number_of_requests = tonumber( KEYS[2] )
       local expire = tonumber( KEYS[3] )
       local increas_time = KEYS[4]
       local is_spam = true
@@ -105,7 +114,7 @@ class SpamStreamResistance
         return is_not_spam
       end
 
-      if (red_count >= max_count_request) then
+      if (red_count >= max_number_of_requests) then
         redis.call('expire', key, (red_expire + increas_time))
         return is_spam
       else
@@ -127,7 +136,7 @@ class SpamStreamResistance
   def lua_redis_filter_3
     <<-EOF
       local key = KEYS[1]
-      local max_count_of_request = tonumber( KEYS[2] )
+      local max_number_of_requests = tonumber( KEYS[2] )
       local expire = tonumber( KEYS[3] )
       local increas_time = KEYS[4]
       local is_spam = true
@@ -145,7 +154,7 @@ class SpamStreamResistance
         return is_not_spam
       end
 
-      if (red_count >= max_count_of_request) then
+      if (red_count >= max_number_of_requests) then
         redis.call('expire', key, (red_expire + increas_time))
         return is_spam
       else
