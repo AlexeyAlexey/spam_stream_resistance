@@ -117,7 +117,7 @@ class SpamStreamResistance::RedisScripts
     end
 
 #Filter scripts
-    def filter_1
+    def filter_spam_stream
       <<-EOF
         local key = KEYS[1]
         local max_count_request = KEYS[2]

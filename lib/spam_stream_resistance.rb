@@ -1,8 +1,8 @@
 require "spam_stream_resistance/version"
 require 'spam_stream_resistance/redis_scripts'
 
-#Class has three standard lua scripts for filtering (lua_redis_filter_1, lua_redis_filter_2, lua_redis_filter_3)
-#It is three methods lua_redis_filter_1, lua_redis_filter_2, lua_redis_filter_3 that return lua script as string
+#Class has three standard lua scripts for filtering (lua_redis_filter_spam_stream, lua_redis_filter_2, lua_redis_filter_3)
+#It is three methods lua_redis_filter_spam_stream, lua_redis_filter_2, lua_redis_filter_3 that return lua script as string
 
 class SpamStreamResistance
   #save filter settings in redis hash 
@@ -26,10 +26,10 @@ class SpamStreamResistance
     @redis_script_menager.list_of_scripts.keys
   end
 
-  #def filter_1(key, max_number_of_requests, lifetime_of_the_key, increas_time)
-    #"filter_1::#{key}"
+  #def filter_spam_stream(key, max_number_of_requests, lifetime_of_the_key, increas_time)
+    #"filter_spam_stream::#{key}"
     #if spam return 1 else return nil
-  #  res = @redis_script_menager.execute_script_by_name("filter_1", ["filter_1:#{key}", max_number_of_requests, lifetime_of_the_key, increas_time])
+  #  res = @redis_script_menager.execute_script_by_name("filter_spam_stream", ["filter_spam_stream:#{key}", max_number_of_requests, lifetime_of_the_key, increas_time])
   #  if res == 1
   #    return true
   #  elsif res.nil?
@@ -77,13 +77,13 @@ class SpamStreamResistance
 
  
     #def init_filters
-    #  @redis_script_menager.add_scripts({filter_1: lua_redis_filter_1, 
+    #  @redis_script_menager.add_scripts({filter_spam_stream: lua_redis_filter_spam_stream, 
     #                                     filter_2: lua_redis_filter_2,
     #                                     filter_3: lua_redis_filter_3
     #                                    })
     #end
 
-  #filter_1 realises the following logics
+  #filter_spam_stream realises the following logics
   #key - an email address or something else. (string type)
   #increas_time - seconds (increase_time)
   #max_number_of_requests - max count of requests (max_number_of_requests)
@@ -91,9 +91,9 @@ class SpamStreamResistance
   #The filter checks if the number of requests in a key (email address) is lower than can be in a lifetime of the key
   #If the number of requests is higher than can be, the filter will increase the lifetime of the key (email address) on increas_time
   #but will not increase the number of requests that are associated with the key
-  #If the number of requests is higher than can be, the filter_1 returns 1 (spam) or nil (not spam)
-  #If the filter_1 returns the empty string, there might be something wrong
-  def lua_redis_filter_1
+  #If the number of requests is higher than can be, the filter_spam_stream returns 1 (spam) or nil (not spam)
+  #If the filter_spam_stream returns the empty string, there might be something wrong
+  def lua_redis_filter_spam_stream
     <<-EOF
       local key = KEYS[1]
       local max_number_of_requests = tonumber( KEYS[2] )

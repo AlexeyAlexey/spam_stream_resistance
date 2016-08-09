@@ -27,13 +27,13 @@ Initialize
 ```
 ```
 #create filter
-@spam.add_filter("filter_1", @spam.lua_redis_filter_1)
+@spam.add_filter("filter_spam_stream", @spam.lua_redis_filter_spam_stream)
 ````
 
 **add_filter(filter_named, lua_script_as_string)** the method returns the hash where the key is a name of the script and the value is SHA1 digest of the script or the empty hash if the script with this name already exists
 
 
-**@spam.lua_redis_filter_1** returns lua script as string
+**@spam.lua_redis_filter_spam_stream** returns lua script as string
 ```ruby
 <<-EOF
       local key = KEYS[1]
@@ -68,7 +68,7 @@ Initialize
 EOF
 ```
 
-**filter_1** realises the following logics
+**filter_spam_stream** realises the following logics
 
 **key** - an email address or something else. (string type)
 
@@ -79,14 +79,14 @@ EOF
 The number of requests is stored in a **key**
 The filter checks if the number of requests in a **key** (email address) is lower than can be in a lifetime of the **key**
 If the number of requests is higher than can be, the filter will increase the lifetime of the **key** (email address) on  **increas_time** but will not increase the number of requests that are associated with the **key**
-If the number of requests is higher than can be, the filter_1 returns **1** (spam) or **nil** (not spam)
-If the **filter_1** returns the empty string, there might be something wrong
+If the number of requests is higher than can be, the filter_spam_stream returns **1** (spam) or **nil** (not spam)
+If the **filter_spam_stream** returns the empty string, there might be something wrong
 
 
 ### For executing the filter
 
 ```ruby
-@spam.execute_filter_by_name( "filter_1" , [ key, max_number_of_requests, lifetime_of_the_key, increas_time ] )
+@spam.execute_filter_by_name( "filter_spam_stream" , [ key, max_number_of_requests, lifetime_of_the_key, increas_time ] )
 ```
 
 **Example**
@@ -98,10 +98,10 @@ lifetime_of_the_key  = 7
 increas_time         = 5
 
 10.times do |i|
-  @spam.execute_filter_by_name("filter_1" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) #=> nil
+  @spam.execute_filter_by_name("filter_spam_stream" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) #=> nil
  end
 
-@spam.execute_filter_by_name("filter_1" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) #=> 1
+@spam.execute_filter_by_name("filter_spam_stream" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) #=> 1
 ```
 
 The method `execute_filter_by_name(name_of_filter_as_string, array_of_params)` takes two parameters. The first parameter is the name of the filter and is the string type. The second parameter is an array of filter parameters.
@@ -119,10 +119,10 @@ lifetime_of_the_key  = 7
 increas_time         = 5
 
 10.times do |i|
-  @spam.execute_filter_by_name("filter_1" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) #=> nil
+  @spam.execute_filter_by_name("filter_spam_stream" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) #=> nil
  end
 
-@spam.filter_key_exists?("filter_1", key) #=> true
+@spam.filter_key_exists?("filter_spam_stream", key) #=> true
 ```
 
 ### We can delete the key from the filter
@@ -138,14 +138,14 @@ lifetime_of_the_key  = 7
 increas_time         = 5
 
 10.times do |i|
-  @spam.execute_filter_by_name("filter_1" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) #=> nil
+  @spam.execute_filter_by_name("filter_spam_stream" ,[key, max_number_of_requests, lifetime_of_the_key, increas_time]) #=> nil
  end
 
-@spam.filter_key_exists?("filter_1", key) #=> true
+@spam.filter_key_exists?("filter_spam_stream", key) #=> true
 
-@spam.delete_key_from_filter("filter_1", key)
+@spam.delete_key_from_filter("filter_spam_stream", key)
 
-@spam.filter_key_exists?("filter_1", key) #=> false
+@spam.filter_key_exists?("filter_spam_stream", key) #=> false
 ```
 
 ### Add your own filter
@@ -180,13 +180,13 @@ params = [key, 1, 2]
 
 ```ruby
 key = "user@mail.com"
-filter_name = "filter_1"
+filter_name = "filter_spam_stream"
 
 max_number_of_requests = 1
 lifetime_of_the_key  = 60
 increas_time         = 1
         
-@spam.add_filter(filter_name, @spam.lua_redis_filter_1)
+@spam.add_filter(filter_name, @spam.lua_redis_filter_spam_stream)
 @spam.execute_filter_by_name(filter_name, [key, max_number_of_requests, lifetime_of_the_key, increas_time])
 
 @spam.filter_time_of_key(filter_name, key) #=>returns the current lifetime of the key in the filter
