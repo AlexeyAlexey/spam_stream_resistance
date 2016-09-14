@@ -1,5 +1,6 @@
 require "spam_stream_resistance/version"
 require 'spam_stream_resistance/redis_scripts'
+require 'spam_stream_resistance/list'
 require 'spam_stream_resistance/white_black_list'
 
 #Class has three standard lua scripts for filtering (lua_redis_filter_spam_stream, lua_redis_filter_2, lua_redis_filter_3)

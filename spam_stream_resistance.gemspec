@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   spec.files         = ["lib/spam_stream_resistance.rb", 
                         "lib/spam_stream_resistance/redis_scripts.rb",
                         "lib/spam_stream_resistance/version.rb",
+                        "lib/spam_stream_resistance/list.rb",
                         "lib/spam_stream_resistance/white_black_list.rb"]
 
   spec.bindir        = "exe"
