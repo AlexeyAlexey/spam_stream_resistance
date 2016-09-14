@@ -235,6 +235,9 @@ list.black_list_exist?(name_of_list)
 list.black_list_include?(name_of_list, keys[0]) #=> true
 list.black_list_include?(name_of_list, keys[1]) #=>true
 
+#the next method returns all keys from list
+list.view_all_keys_from_black_list(name_of_list) #=> ["1@mail.com", "2@mail.com"]
+
 #For deleting keys from the list we can use the following method
 list.delete_keys_from_black_list(name_of_list, [ keys[1] ]) # => returns 1 if the key was deleted or 0 if the list doesn’t exist 
 
@@ -269,6 +272,9 @@ list.white_list_exist?(name_of_list)
 #we can check if the list includes the key
 list.white_list_include?(name_of_list, keys[0]) #=> true
 list.white_list_include?(name_of_list, keys[1]) #=> true
+
+#the next method returns all keys from list
+list.view_all_keys_from_white_list(name_of_list) #=> ["1@mail.com", "2@mail.com"]
 
 #For deleting keys from the list we can use the following method
 list.delete_keys_from_white_list(name_of_list, [ keys[1] ])

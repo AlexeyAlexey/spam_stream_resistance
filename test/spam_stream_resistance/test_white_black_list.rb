@@ -133,6 +133,27 @@ class SpamStreamResistance::TestWhiteBlackList < Minitest::Test
 
   end
 
+  def test_view_all_keys_from_black_list
+    list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
+
+    name_of_list = "list_1"
+    keys  = ["1@mail.com", "2@mail.com"]
+
+    list.add_in_black(name_of_list, keys)
+    
+    assert keys == list.view_all_keys_from_black_list(name_of_list)
+  end
+
+  def test_view_all_keys_from_white_list
+    list = SpamStreamResistance::WhiteBlackList.new(@redis_pool)
+
+    name_of_list = "list_1"
+    keys  = ["1@mail.com", "2@mail.com"]
+
+    list.add_in_white(name_of_list, keys)
+    
+    assert keys == list.view_all_keys_from_white_list(name_of_list)
+  end
 
 end
 

@@ -54,13 +54,20 @@ class SpamStreamResistance::WhiteBlackList
   end
 
 
-
   def black_list_include?(name_of_list, key)
   	res = false
     @redis_pool.with do |redis|
       res = redis.sismember "#{BLACK_LIST_NAMED}:#{name_of_list}", key
     end
 
+    res
+  end
+
+   def view_all_keys_from_black_list(name_of_list)
+    res = []
+    @redis_pool.with do |redis|
+      res = redis.smembers "#{BLACK_LIST_NAMED}:#{name_of_list}"
+    end
     res
   end
 
@@ -109,6 +116,14 @@ class SpamStreamResistance::WhiteBlackList
       res = redis.sismember "#{WHITE_LIST_NAMED}:#{name_of_list}", key
     end
 
+    res
+  end
+
+  def view_all_keys_from_white_list(name_of_list)
+    res = []
+    @redis_pool.with do |redis|
+      res = redis.smembers "#{WHITE_LIST_NAMED}:#{name_of_list}"
+    end
     res
   end
 
