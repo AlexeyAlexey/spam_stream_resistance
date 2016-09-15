@@ -5,7 +5,8 @@ This library uses the redis and next libraries “redis" and "connection_pool"
 
 - You can use this library as a spam filter. 
 - You can add your own filter(scripts) and execute them. (You have to use a key as the first parameter when executing the filter) 
-- You can create a black or white list with or without time expiration (lifetime) of this list
+- You can create a blacklist or whitelist with or without time expiration (lifetime) of this list
+- You can create your own list with or without time expiration (lifetime) of this list
 - You can use a script manager
 
 
@@ -207,9 +208,9 @@ end
 ```
 
 
-## A black or white list with or without time expiration (lifetime)
+## A blacklist or whitelist or your own list with or without time expiration (lifetime)
 
-### Create a Black List
+### Create a Blacklist
 
 ```ruby
 redis_sett   = {host: 'localhost', port: 6379}
@@ -255,7 +256,6 @@ list.black_list_exist?(name_of_list) #=>  false
 
 
 
-
 ### Create a Whitelist 
 
 ```ruby
@@ -290,8 +290,45 @@ list.white_list_exist?(name_of_list) == false
 ```
 
 
-### Create the lifetime of a blacklist or a whitelist
+
+### Create your own list
+
+```ruby
+list = SpamStreamResistance::List.new(@redis_pool)
+
+name_of_list = "list_1"
+keys  = ["1@mail.com", "2@mail.com"]
+
+#If you add keys in the list but it doesn’t exist, the list has to be created and then keys have to be added to the list
+list.add_in_list(name_of_list, keys)
+    
+#the next method checks if the list exists   
+list.list_exist?(name_of_list)
+
+#we can check if the list includes the key
+list.list_include?(name_of_list, keys[0]) #=> true
+list.list_include?(name_of_list, keys[1]) #=> true
+
+#the next method returns all keys from list
+list.view_all_keys_from_list(name_of_list) #=> ["1@mail.com", "2@mail.com"]
+
+#For deleting keys from the list we can use the following method
+list.delete_keys_from_list(name_of_list, [ keys[1] ])
+
+list.list_include?(name_of_list, keys[1]) #=> false
+
+#For deleting the list we can use the following method
+list.delete_list(name_of_list)
+
+#We can check whether or not the list exists by its name 
+list.list_exist?(name_of_list) == false
+```
+
+
+
+### Create the lifetime of a blacklist or a whitelist or your own list
  
+#### Blacklist
 ```ruby
 expire = 5 #lifetime in seconds  
     
@@ -321,7 +358,7 @@ list.black_list_delete_expire(name_of_list)
 list.black_list_check_expire(name_of_list)# => -1
 ```
 
-### Whitelist 
+#### Whitelist 
 
 ```ruby
 name_of_list = "list_1"
@@ -345,6 +382,32 @@ list.white_list_delete_expire(name_of_list)
 
 #if the lifetime doesn’t exist the method returns -1
 list.white_list_check_expire(name_of_list) #=> -1
+```
+
+#### Your own list
+
+```ruby
+name_of_list = "list_1"
+keys  = ["1@mail.com", "2@mail.com"]
+
+list.add_in_list(name_of_list, keys)
+    
+list.list_exist?(name_of_list)
+
+list.list_include?(name_of_list, keys[0])
+list.list_include?(name_of_list, keys[1])
+
+#set the lifetime of the list for 10 seconds
+list.list_set_expire(name_of_list, 10)  #<======================
+    
+#you can check the lifetime of the list
+list.list_check_expire(name_of_list) #=> seconds
+
+#you can delete the lifetime of the list
+list.list_delete_expire(name_of_list)
+
+#if the lifetime doesn’t exist the method returns -1
+list.list_check_expire(name_of_list) #=> -1
 ```
 
 ## Use Script Manager
