@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
     You can create a black or white list with or without time expiration (lifetime) of this list
     You can use a script manager
   EOS
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage      = "https://github.com/AlexeyAlexey/spam_stream_resistance"
   spec.license       = "MIT"
 
   spec.files         = ["lib/spam_stream_resistance.rb", 
